@@ -3,6 +3,7 @@ import Header from './components/Header';
 import SearchBar from './components/SearchBar';
 import ProductCard from './components/ProductCard';
 import ProductFormModal from './components/ProductFormModal';
+import DeleteModal from './components/DeleteModal';
 import { INITIAL_PRODUCTS } from './data/initialProducts';
 
 export default function App() {
@@ -10,6 +11,7 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
+  const [deletingProduct, setDeletingProduct] = useState(null);
 
   const filteredProducts = products.filter((product) =>
     product.name.toLowerCase().includes(searchQuery.trim().toLowerCase())
@@ -51,7 +53,18 @@ export default function App() {
     handleCloseForm();
   }
 
-  function handleDeleteClick() {}
+  function handleDeleteClick(product) {
+    setDeletingProduct(product);
+  }
+
+  function handleCloseDelete() {
+    setDeletingProduct(null);
+  }
+
+  function handleConfirmDelete(id) {
+    setProducts((prev) => prev.filter((item) => item.id !== id));
+    setDeletingProduct(null);
+  }
 
   return (
     <main className="container">
@@ -105,6 +118,14 @@ export default function App() {
           product={editingProduct}
           onClose={handleCloseForm}
           onSave={handleSaveProduct}
+        />
+      )}
+
+      {deletingProduct && (
+        <DeleteModal
+          product={deletingProduct}
+          onClose={handleCloseDelete}
+          onConfirm={handleConfirmDelete}
         />
       )}
     </main>
