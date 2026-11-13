@@ -2,19 +2,54 @@ import { useState } from 'react';
 import Header from './components/Header';
 import SearchBar from './components/SearchBar';
 import ProductCard from './components/ProductCard';
+import ProductFormModal from './components/ProductFormModal';
 import { INITIAL_PRODUCTS } from './data/initialProducts';
 
 export default function App() {
-  const [products] = useState(INITIAL_PRODUCTS);
+  const [products, setProducts] = useState(INITIAL_PRODUCTS);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState(null);
 
   const filteredProducts = products.filter((product) =>
     product.name.toLowerCase().includes(searchQuery.trim().toLowerCase())
   );
 
-  function handleAddClick() {}
+  function handleAddClick() {
+    setEditingProduct(null);
+    setIsFormOpen(true);
+  }
 
-  function handleEditClick() {}
+  function handleEditClick(product) {
+    setEditingProduct(product);
+    setIsFormOpen(true);
+  }
+
+  function handleCloseForm() {
+    setIsFormOpen(false);
+    setEditingProduct(null);
+  }
+
+  function handleSaveProduct(formData) {
+    if (formData.id !== null) {
+      setProducts((prev) =>
+        prev.map((item) =>
+          item.id === formData.id
+            ? { ...item, name: formData.name, price: formData.price }
+            : item
+        )
+      );
+    } else {
+      const nextId =
+        products.length > 0 ? Math.max(...products.map((item) => item.id)) + 1 : 1;
+      setProducts((prev) => [
+        ...prev,
+        { id: nextId, name: formData.name, price: formData.price },
+      ]);
+    }
+
+    handleCloseForm();
+  }
 
   function handleDeleteClick() {}
 
@@ -62,6 +97,15 @@ export default function App() {
             </button>
           )}
         </section>
+      )}
+
+      {isFormOpen && (
+        <ProductFormModal
+          key={editingProduct ? `edit-${editingProduct.id}` : 'add'}
+          product={editingProduct}
+          onClose={handleCloseForm}
+          onSave={handleSaveProduct}
+        />
       )}
     </main>
   );
