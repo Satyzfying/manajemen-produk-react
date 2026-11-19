@@ -17,7 +17,7 @@ export default function Sidebar() {
           <h1 className="text-base font-bold text-slate-900 leading-tight">
             Manajemen Produk
           </h1>
-          <p className="text-xs text-slate-400">Pemrograman Web</p>
+          <p className="text-xs text-slate-400">Aplikasi React</p>
         </div>
       </div>
 
@@ -42,13 +42,6 @@ export default function Sidebar() {
           );
         })}
       </nav>
-
-      <div className="hidden md:block mt-auto p-4 border-t border-slate-100">
-        <div className="bg-slate-50 rounded-lg p-3 text-xs text-slate-500">
-          <p className="font-semibold text-slate-700">Tugas 4 — Week 13</p>
-          <p className="mt-0.5">React Router & Tailwind CSS</p>
-        </div>
-      </div>
     </aside>
   );
 }

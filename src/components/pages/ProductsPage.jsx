@@ -104,8 +104,8 @@ export default function ProductsPage({
           </h3>
           <p className="text-sm text-slate-500 mt-1 max-w-sm mx-auto">
             {searchQuery.trim()
-              ? `Tidak ada produk yang cocok dengan pencarian "${searchQuery.trim()}".`
-              : 'Belum ada produk terdaftar. Klik tombol Tambah Produk untuk memulai.'}
+              ? `Tidak ada produk yang cocok dengan "${searchQuery.trim()}".`
+              : 'Belum ada produk.'}
           </p>
           {searchQuery.trim() && (
             <div className="mt-4">
