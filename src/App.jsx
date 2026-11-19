@@ -1,133 +1,68 @@
-import { useState } from 'react';
-import Header from './components/Header';
-import SearchBar from './components/SearchBar';
-import ProductCard from './components/ProductCard';
-import ProductFormModal from './components/ProductFormModal';
-import DeleteModal from './components/DeleteModal';
-import { INITIAL_PRODUCTS } from './data/initialProducts';
+import { useState, useEffect } from 'react';
+import { Routes, Route } from 'react-router';
+import AppLayout from './components/templates/AppLayout';
+import DashboardPage from './components/pages/DashboardPage';
+import ProductsPage from './components/pages/ProductsPage';
+import ProductDetailPage from './components/pages/ProductDetailPage';
+import NotFoundPage from './components/pages/NotFoundPage';
+import * as productApi from './services/productApi';
 
 export default function App() {
-  const [products, setProducts] = useState(INITIAL_PRODUCTS);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingProduct, setEditingProduct] = useState(null);
-  const [deletingProduct, setDeletingProduct] = useState(null);
+  const [products, setProducts] = useState(() => productApi.getLocalProducts());
 
-  const filteredProducts = products.filter((product) =>
-    product.name.toLowerCase().includes(searchQuery.trim().toLowerCase())
-  );
+  useEffect(() => {
+    let active = true;
+    async function loadData() {
+      try {
+        const data = await productApi.getProducts();
+        if (active && Array.isArray(data) && data.length > 0) {
+          setProducts(data);
+        }
+      } catch {
+        // ignore
+      }
+    }
+    loadData();
+    return () => {
+      active = false;
+    };
+  }, []);
 
-  function handleAddClick() {
-    setEditingProduct(null);
-    setIsFormOpen(true);
-  }
-
-  function handleEditClick(product) {
-    setEditingProduct(product);
-    setIsFormOpen(true);
-  }
-
-  function handleCloseForm() {
-    setIsFormOpen(false);
-    setEditingProduct(null);
-  }
-
-  function handleSaveProduct(formData) {
+  async function handleSaveProduct(formData) {
     if (formData.id !== null) {
+      const updated = await productApi.updateProduct(formData);
       setProducts((prev) =>
-        prev.map((item) =>
-          item.id === formData.id
-            ? { ...item, name: formData.name, price: formData.price }
-            : item
-        )
+        prev.map((item) => (String(item.id) === String(formData.id) ? updated : item))
       );
     } else {
-      const nextId =
-        products.length > 0 ? Math.max(...products.map((item) => item.id)) + 1 : 1;
-      setProducts((prev) => [
-        ...prev,
-        { id: nextId, name: formData.name, price: formData.price },
-      ]);
+      const created = await productApi.createProduct(formData);
+      setProducts((prev) => [...prev, created]);
     }
-
-    handleCloseForm();
   }
 
-  function handleDeleteClick(product) {
-    setDeletingProduct(product);
-  }
-
-  function handleCloseDelete() {
-    setDeletingProduct(null);
-  }
-
-  function handleConfirmDelete(id) {
-    setProducts((prev) => prev.filter((item) => item.id !== id));
-    setDeletingProduct(null);
+  async function handleDeleteProduct(id) {
+    await productApi.deleteProduct(id);
+    setProducts((prev) => prev.filter((item) => String(item.id) !== String(id)));
   }
 
   return (
-    <main className="container">
-      <Header onAddClick={handleAddClick} />
-
-      <SearchBar
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        totalCount={products.length}
-      />
-
-      {filteredProducts.length > 0 ? (
-        <>
-          <section className="product-grid">
-            {filteredProducts.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                onEdit={handleEditClick}
-                onDelete={handleDeleteClick}
-              />
-            ))}
-          </section>
-          <p className="list-footer">
-            Menampilkan {filteredProducts.length} dari {products.length} produk
-          </p>
-        </>
-      ) : (
-        <section className="empty-state">
-          <h3>Produk tidak ditemukan</h3>
-          <p>
-            {searchQuery.trim()
-              ? `Tidak ada produk yang cocok dengan "${searchQuery.trim()}".`
-              : 'Belum ada produk. Tambahkan produk pertama Anda.'}
-          </p>
-          {searchQuery.trim() && (
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={() => setSearchQuery('')}
-            >
-              Reset Pencarian
-            </button>
-          )}
-        </section>
-      )}
-
-      {isFormOpen && (
-        <ProductFormModal
-          key={editingProduct ? `edit-${editingProduct.id}` : 'add'}
-          product={editingProduct}
-          onClose={handleCloseForm}
-          onSave={handleSaveProduct}
-        />
-      )}
-
-      {deletingProduct && (
-        <DeleteModal
-          product={deletingProduct}
-          onClose={handleCloseDelete}
-          onConfirm={handleConfirmDelete}
-        />
-      )}
-    </main>
+    <Routes>
+      <Route
+        path="/"
+        element={
+          <AppLayout
+            products={products}
+            onSaveProduct={handleSaveProduct}
+            onDeleteProduct={handleDeleteProduct}
+          />
+        }
+      >
+        <Route index element={<DashboardPage />} />
+        <Route path="dashboard" element={<DashboardPage />} />
+        <Route path="products" element={<ProductsPage />} />
+        <Route path="products/:id" element={<ProductDetailPage />} />
+        <Route path="*" element={<NotFoundPage />} />
+      </Route>
+    </Routes>
   );
 }
