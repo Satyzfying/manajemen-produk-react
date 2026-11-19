@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Routes, Route, Navigate } from 'react-router';
+import { Routes, Route } from 'react-router';
 import AppLayout from './components/templates/AppLayout';
+import DashboardPage from './components/pages/DashboardPage';
 import ProductsPage from './components/pages/ProductsPage';
 import { INITIAL_PRODUCTS } from './data/initialProducts';
 
@@ -42,7 +43,8 @@ export default function App() {
           />
         }
       >
-        <Route index element={<Navigate to="/products" replace />} />
+        <Route index element={<DashboardPage />} />
+        <Route path="dashboard" element={<DashboardPage />} />
         <Route path="products" element={<ProductsPage />} />
       </Route>
     </Routes>
