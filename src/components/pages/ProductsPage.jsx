@@ -71,7 +71,7 @@ export default function ProductsPage({
             Daftar Produk
           </h1>
           <p className="text-sm text-slate-500 mt-0.5">
-            Kelola daftar produk dan harga dalam satu tempat.
+            Kelola daftar produk dan harga.
           </p>
         </div>
         <Button variant="primary" onClick={handleAddClick}>
